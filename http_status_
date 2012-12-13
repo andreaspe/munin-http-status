@@ -31,7 +31,6 @@ if (-e $offset_file){
 	@logtail_lines = `/usr/sbin/logtail2 -f $log_file -o $offset_file`;
 	
 } else {
-	print "offset file not found\n";
 	system('/usr/sbin/logtail2 -f '.$log_file.' -o '.$offset_file.' > /dev/null');
 }
 
