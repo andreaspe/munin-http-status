@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+
+use strict;
+(my $log_name = $0) =~ s/^.*\/?http_status_//;
+my @codes = split (/,/, $ENV{check_http_codes});
+
+my $arg = shift();
+
+if ($arg eq 'config') {
+	print<<EOC;
+graph_title http status
+graph_vlabel items
+graph_category nginx
+EOC
+	print "$_.label $_\n" for (@codes);
+	exit 0;
+}
+
+
+my $offset_path = '/var/lib/munin/plugin-state/';
+my $log_path = '/var/log/nginx/';
+
+
+my $log_file = $log_path.$log_name;
+my $offset_file = $offset_path.$log_name.'.offset';
+
+
+my @logtail_lines;
+
+if (-e $offset_file){
+	@logtail_lines = `/usr/sbin/logtail2 -f $log_file -o $offset_file`;
+	
+} else {
+	print "offset file not found\n";
+	system('/usr/sbin/logtail2 -f '.$log_file.' -o '.$offset_file.' > /dev/null');
+}
+
+for my $code (@codes){
+	print $code.'.value '. grep { /\sHTTP\/1\..\"\s$code\s/ } @logtail_lines;
+	print "\n";
+}
