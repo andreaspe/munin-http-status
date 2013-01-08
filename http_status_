@@ -35,6 +35,7 @@ if (-e $offset_file){
 }
 
 for my $code (@codes){
-	print $code.'.value '. grep { /\sHTTP\/1\..\"\s$code\s/ } @logtail_lines;
+    my $total = grep { /\sHTTP\/1\..\"\s$code\s/ } @logtail_lines;
+	print $code.'.value '. $total / 300;
 	print "\n";
 }
