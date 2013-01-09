@@ -4,7 +4,7 @@
 
 use strict;
 (my $log_name = $0) =~ s/^.*\/?http_status_//;
-my @codes = split (/,/, $ENV{check_http_codes});
+my @codes = split (/,/, $ENV{check_http_codes}) if ($ENV{check_http_codes});
 
 my $arg = shift() || "";
 
