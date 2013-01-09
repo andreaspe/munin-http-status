@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+#%# family=auto
+#%# capabilities=autoconf
 
 use strict;
 (my $log_name = $0) =~ s/^.*\/?http_status_//;
@@ -7,13 +9,26 @@ my @codes = split (/,/, $ENV{check_http_codes});
 my $arg = shift() || "";
 
 if ($arg eq 'config') {
-	print<<EOC;
+    print<<EOC;
 graph_title http status
 graph_vlabel items
 graph_category nginx
 EOC
-	print "$_.label $_\n" for (@codes);
-	exit 0;
+    print "$_.label $_\n" for (@codes);
+    exit 0;
+}
+
+if ($arg eq 'autoconf') {
+    my $reason;
+    $reason .= 'No /var/log/nginx dir ' unless (-d '/var/log/nginx');
+    $reason .= 'No /etc/nginx dir ' unless (-d '/etc/nginx');
+    $reason .= 'No logtail2 instaled' unless (-x '/usr/sbin/logtail2');
+    if ($reason) {
+        print "No ($reason)\n";
+    } else {
+        print "yes\n";
+    }
+    exit 0;
 }
 
 
@@ -28,14 +43,13 @@ my $offset_file = $offset_path.$log_name.'.offset';
 my @logtail_lines;
 
 if (-e $offset_file){
-	@logtail_lines = `/usr/sbin/logtail2 -f $log_file -o $offset_file`;
-	
+    @logtail_lines = `/usr/sbin/logtail2 -f $log_file -o $offset_file`;
 } else {
-	system('/usr/sbin/logtail2 -f '.$log_file.' -o '.$offset_file.' > /dev/null');
+    system('/usr/sbin/logtail2 -f '.$log_file.' -o '.$offset_file.' > /dev/null');
 }
 
 for my $code (@codes){
     my $total = grep { /\sHTTP\/1\..\"\s$code\s/ } @logtail_lines;
-	print $code.'.value '. $total / 300;
-	print "\n";
+    print $code.'.value '. $total / 300;
+    print "\n";
 }
