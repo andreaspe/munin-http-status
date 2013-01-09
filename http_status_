@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #%# family=auto
-#%# capabilities=autoconf
+#%# capabilities=autoconf suggest
 
 use strict;
 (my $log_name = $0) =~ s/^.*\/?http_status_//;
@@ -31,6 +31,12 @@ if ($arg eq 'autoconf') {
     exit 0;
 }
 
+if ($arg eq 'suggest') {
+    opendir(DIR, '/var/log/nginx');
+    my @targets = grep { /access.log$/ } readdir(DIR);
+    print join("\n", @targets);
+    exit 0;
+}
 
 my $offset_path = '/var/lib/munin/plugin-state/';
 my $log_path = '/var/log/nginx/';
